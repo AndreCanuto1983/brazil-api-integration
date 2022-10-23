@@ -15,11 +15,15 @@ var app = builder.Build();
 app.MapHealthChecks("/healthcheck");
 app.CustomExceptionMiddleware();
 
-if (app.Environment.IsDevelopment())
-{
-    app.UseSwagger();
-    app.UseSwaggerUI();
-}
+//habilitar caso queira esconder o swagger após publicado em produção
+//if (app.Environment.IsDevelopment())
+//{
+//    app.UseSwagger();
+//    app.UseSwaggerUI();
+//}
+
+app.UseSwagger();
+app.UseSwaggerUI();
 
 app.UseAuthorization();
 
