@@ -12,14 +12,17 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
 
-//set especific cors
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowSpecificOrigin",
-        builder => builder.WithOrigins(
-            "http://localhost:8080",
-            "http://192.168.0.195:8080",
-            "http://localhost:3000"));
+        policy =>
+        {
+            policy.WithOrigins(
+                "http://localhost:8080",
+                "http://192.168.0.195:8080",
+                "http://localhost:3000"
+                );
+        });
 });
 
 var app = builder.Build();
@@ -35,6 +38,14 @@ app.CustomExceptionMiddleware();
 //}
 
 app.UseCors("AllowSpecificOrigin");
+
+//habilitar qualquer acesso
+//app.UseCors(x => x
+//.AllowAnyOrigin()
+//.AllowAnyMethod()
+//.AllowAnyHeader()
+//); 
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
