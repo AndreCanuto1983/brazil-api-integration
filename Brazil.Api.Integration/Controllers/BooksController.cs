@@ -30,7 +30,7 @@ namespace Brazil.Api.Integration.Controllers
             var response = await _bookService.GetBookAsync(isbn, cancellationToken);
 
             if (!response.Success)
-                return BadRequest(response);
+                return NoContent();
 
             return Ok(response);
         }

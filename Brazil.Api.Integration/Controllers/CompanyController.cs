@@ -34,7 +34,7 @@ namespace Brazil.Api.Integration.Controllers
             var response = await _companyService.GetCompanyAsync(cnpj, cancellationToken);
 
             if (!response.Success)
-                return BadRequest(response);
+                return NoContent();
 
             return Ok(response);
         }

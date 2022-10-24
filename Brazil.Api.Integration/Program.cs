@@ -30,21 +30,7 @@ var app = builder.Build();
 app.MapHealthChecks("/healthcheck");
 app.CustomExceptionMiddleware();
 
-//Enable if you want to hide the swagger after publishing in production
-//if (app.Environment.IsDevelopment())
-//{
-//    app.UseSwagger();
-//    app.UseSwaggerUI();
-//}
-
 app.UseCors("AllowSpecificOrigin");
-
-//habilitar qualquer acesso
-//app.UseCors(x => x
-//.AllowAnyOrigin()
-//.AllowAnyMethod()
-//.AllowAnyHeader()
-//); 
 
 app.UseSwagger();
 app.UseSwaggerUI();

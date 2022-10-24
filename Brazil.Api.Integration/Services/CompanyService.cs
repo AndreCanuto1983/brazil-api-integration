@@ -8,9 +8,6 @@ namespace Brazil.Api.Integration.Services
 {
     public class CompanyService : ICompanyService
     {
-        //api cnpj
-        //https://brasilapi.com.br/api/cnpj/v1/19131243000197
-        
         private const string PATH_NAME = "/api/cnpj/v1";
         private readonly ILogger<CompanyService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
@@ -31,29 +28,29 @@ namespace Brazil.Api.Integration.Services
 
                 var response = await client.GetAsync($"{PATH_NAME}/{cnpj}");
 
-                _logger.LogInformation("[CompanyService][GetCompanyAsync][Response]: {response}",
-                    await response.Content.ReadAsStringAsync());
-
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                        await response.Content.ReadAsStreamAsync(),
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }, cancellationToken);
-
-                    return error!.CompanyUnsuccessfully();
-                }
-
-                var result = await JsonSerializer.DeserializeAsync<Company>(
+                    var result = await JsonSerializer.DeserializeAsync<Company>(
                     await response.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
 
-                return result!.Success();
+                    return result!.Success();
+                }
+
+                var error = await JsonSerializer.DeserializeAsync<MessageError>(
+                    await response.Content.ReadAsStreamAsync(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }, cancellationToken);
+
+                _logger.LogWarning("[CompanyService][GetCompanyAsync][Response]: {response}",
+                await response.Content.ReadAsStringAsync());
+
+                return error!.CompanyUnsuccessfully();
             }
             catch (Exception ex)
             {
@@ -61,6 +58,6 @@ namespace Brazil.Api.Integration.Services
                 throw;
             }
         }
-          
+
     }
 }

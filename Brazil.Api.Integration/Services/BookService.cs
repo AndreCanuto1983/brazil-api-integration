@@ -28,29 +28,29 @@ namespace Brazil.Api.Integration.Services
 
                 var response = await client.GetAsync($"{PATH_NAME}/{isbn}");
 
-                _logger.LogInformation("[BookService][GetBookAsync][Response]: {response}",
-                    await response.Content.ReadAsStringAsync());
-
-                if (!response.IsSuccessStatusCode)
+                if (response.IsSuccessStatusCode)
                 {
-                    var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                        await response.Content.ReadAsStreamAsync(),
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }, cancellationToken);
-
-                    return error!.BookUnsuccessfully();
-                }
-
-                var result = await JsonSerializer.DeserializeAsync<Book>(
+                    var result = await JsonSerializer.DeserializeAsync<Book>(
                     await response.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
 
-                return result!.Success();
+                    return result!.Success();
+                }
+
+                var error = await JsonSerializer.DeserializeAsync<MessageError>(
+                        await response.Content.ReadAsStreamAsync(),
+                        new JsonSerializerOptions
+                        {
+                            PropertyNameCaseInsensitive = true
+                        }, cancellationToken);
+
+                _logger.LogWarning("[BookService][GetBookAsync][Response]: {response}",
+                await response.Content.ReadAsStringAsync());
+
+                return error!.BookUnsuccessfully();
             }
             catch (Exception ex)
             {
