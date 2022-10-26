@@ -5,19 +5,19 @@ metadata:
   name: pos-puc-tcc-api
 spec:
   replicas: 1
+  selector:
+    matchLabels:
+        app: pos.puc.tcc.api 
   template:
     metadata:
       labels:
         app: pos.puc.tcc.api
     spec:
       containers:
-      - name: pos-puc-tcc-api
+      - name: webapi
         image: andrecanuto/pos.puc.tcc.api:latest
         ports:
         - containerPort: 80
         # env:
         # - name: ASPNETCORE_URLS
-        #   value: http://*:8080
-  selector:
-    matchLabels:
-        app: pos.puc.tcc.api        
+        #   value: http://*:8080         
