@@ -2,6 +2,7 @@ using Brazil.Api.Integration.Configurations;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Redis();
 builder.Services.Di();
 builder.Services.Extension();
 builder.HttpClient();

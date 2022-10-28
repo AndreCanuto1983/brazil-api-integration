@@ -11,33 +11,43 @@ namespace Brazil.Api.Integration.Services
         private const string PATH_NAME = "/api/cnpj/v1";
         private readonly ILogger<CompanyService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly ICompanyRepository _companyRepository;
 
         public CompanyService(
             ILogger<CompanyService> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            ICompanyRepository companyRepository)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _companyRepository = companyRepository;
         }
 
         public async Task<CompanyResponse> GetCompanyAsync(string cnpj, CancellationToken cancellationToken)
         {
             try
             {
+                var comapanyInRedis = await _companyRepository.GetCompanyAsync(cnpj, cancellationToken);
+
+                if (comapanyInRedis is not null)
+                    comapanyInRedis.Success();
+
                 var client = _httpClientFactory.CreateClient("BrazilApi");
 
                 var response = await client.GetAsync($"{PATH_NAME}/{cnpj}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await JsonSerializer.DeserializeAsync<Company>(
+                    var company = await JsonSerializer.DeserializeAsync<Company>(
                     await response.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
 
-                    return result!.Success();
+                    await _companyRepository.SetCompanyAsync(company, cancellationToken);
+
+                    return company!.Success();
                 }
 
                 var error = await JsonSerializer.DeserializeAsync<MessageError>(

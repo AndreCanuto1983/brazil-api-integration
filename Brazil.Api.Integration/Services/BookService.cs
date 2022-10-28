@@ -11,33 +11,43 @@ namespace Brazil.Api.Integration.Services
         private const string PATH_NAME = "/api/isbn/v1";
         private readonly ILogger<BookService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IBookRepository _bookRepository;
 
         public BookService(
             ILogger<BookService> logger,
-            IHttpClientFactory httpClientFactory)
+            IHttpClientFactory httpClientFactory,
+            IBookRepository bookRepository)
         {
             _logger = logger;
             _httpClientFactory = httpClientFactory;
+            _bookRepository = bookRepository;
         }
 
         public async Task<BookResponse> GetBookAsync(string isbn, CancellationToken cancellationToken)
         {
             try
             {
+                var bookInRedis = await _bookRepository.GetBookAsync(isbn, cancellationToken);
+
+                if (bookInRedis is not null)
+                    return bookInRedis.Success();
+
                 var client = _httpClientFactory.CreateClient("BrazilApi");
 
                 var response = await client.GetAsync($"{PATH_NAME}/{isbn}");
 
                 if (response.IsSuccessStatusCode)
                 {
-                    var result = await JsonSerializer.DeserializeAsync<Book>(
+                    var book = await JsonSerializer.DeserializeAsync<Book>(
                     await response.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
 
-                    return result!.Success();
+                    await _bookRepository.SetBookAsync(book, cancellationToken);
+
+                    return book!.Success();
                 }
 
                 var error = await JsonSerializer.DeserializeAsync<MessageError>(
