@@ -36,6 +36,12 @@ namespace Brazil.Api.Integration.Services
 
                 var response = await client.GetAsync($"{PATH_NAME}/{isbn}");
 
+                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}", 
+                    (int)response.StatusCode);
+
+                _logger.LogInformation("[BookService][GetBookAsync] => RESPONSE: {response}", 
+                    await response.Content.ReadAsStringAsync());
+
                 if (response.IsSuccessStatusCode)
                 {
                     var book = await JsonSerializer.DeserializeAsync<Book>(
@@ -56,9 +62,6 @@ namespace Brazil.Api.Integration.Services
                         {
                             PropertyNameCaseInsensitive = true
                         }, cancellationToken);
-
-                _logger.LogWarning("[BookService][GetBookAsync][Response]: {response}",
-                await response.Content.ReadAsStringAsync());
 
                 return error!.BookUnsuccessfully();
             }

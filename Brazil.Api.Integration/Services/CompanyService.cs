@@ -36,6 +36,12 @@ namespace Brazil.Api.Integration.Services
 
                 var response = await client.GetAsync($"{PATH_NAME}/{cnpj}");
 
+                _logger.LogInformation("[CompanyService][GetCompanyAsync] => STATUS CODE: {statusCode}",
+                    (int)response.StatusCode);
+
+                _logger.LogInformation("[CompanyService][GetCompanyAsync] => RESPONSE: {response}",
+                    await response.Content.ReadAsStringAsync());
+
                 if (response.IsSuccessStatusCode)
                 {
                     var company = await JsonSerializer.DeserializeAsync<Company>(
@@ -56,9 +62,6 @@ namespace Brazil.Api.Integration.Services
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
-
-                _logger.LogWarning("[CompanyService][GetCompanyAsync][Response]: {response}",
-                await response.Content.ReadAsStringAsync());
 
                 return error!.CompanyUnsuccessfully();
             }
