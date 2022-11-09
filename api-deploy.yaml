@@ -28,11 +28,12 @@ kind: Service
 metadata:
   name: pos-puc-tcc-api
 spec:
-  type: NodePort
+  #type: NodePort
+  type: LoadBalancer
   selector:
      app: pos-puc-tcc-api   
   ports:
     - protocol: TCP
       port: 80
       targetPort: 80
-      nodePort: 31500
+      #nodePort: 31500
