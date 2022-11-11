@@ -22,7 +22,7 @@ builder.Services.AddCors(options =>
                 "http://localhost:8080",
                 "http://192.168.0.195:8080",
                 "http://localhost:3000",
-                "https://pos-puc-front.web.app/"
+                "https://pos-puc-front.web.app"                
                 );
         });
 });
