@@ -13,26 +13,16 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddCors();
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowSpecificOrigin",
-        policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:8080",
-                "http://192.168.0.195:8080",
-                "http://localhost:3000",
-                "https://pos-puc-front.web.app"                
-                );
-        });
-});
-
 var app = builder.Build();
 
 app.MapHealthChecks("/healthcheck");
 app.CustomExceptionMiddleware();
 
-app.UseCors("AllowSpecificOrigin");
+app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            );
 
 app.UseSwagger();
 app.UseSwaggerUI();
