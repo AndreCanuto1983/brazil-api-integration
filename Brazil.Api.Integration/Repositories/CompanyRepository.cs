@@ -26,11 +26,6 @@ namespace Brazil.Api.Integration.Repositories
                 if (company is null)
                     return;
 
-                var response = await _distributedCache.GetAsync(company.Cnpj, cancellationToken);
-
-                if (response != null)
-                    return;
-
                 await _distributedCache.SetStringAsync(
                     company.Cnpj,
                     JsonSerializer.Serialize(company),

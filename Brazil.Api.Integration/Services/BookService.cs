@@ -9,6 +9,7 @@ namespace Brazil.Api.Integration.Services
     public class BookService : IBookService
     {
         private const string PATH_NAME = "/api/isbn/v1";
+        private const string PATH_GOOGLE = "/books/v1/volumes?q=";
         private readonly ILogger<BookService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBookRepository _bookRepository;
@@ -36,10 +37,10 @@ namespace Brazil.Api.Integration.Services
 
                 var response = await client.GetAsync($"{PATH_NAME}/{isbn}");
 
-                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}", 
+                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}",
                     (int)response.StatusCode);
 
-                _logger.LogInformation("[BookService][GetBookAsync] => RESPONSE: {response}", 
+                _logger.LogInformation("[BookService][GetBookAsync] => RESPONSE: {response}",
                     await response.Content.ReadAsStringAsync());
 
                 if (response.IsSuccessStatusCode)
@@ -68,6 +69,45 @@ namespace Brazil.Api.Integration.Services
             catch (Exception ex)
             {
                 _logger.LogError("[BookService][GetBookAsync][Exception]: {ex}", ex.Message);
+                throw;
+            }            
+        }
+
+        public async Task<GoogleBookItems?> GetBookInGoogleAsync(string isbn, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var bookInRedis = await _bookRepository.GetGoogleBookAsync(isbn, cancellationToken);
+
+                if (bookInRedis is not null)
+                    return bookInRedis;
+
+                var client = _httpClientFactory.CreateClient("Google");
+                                
+                var response = await client.GetAsync($"{PATH_GOOGLE}isbn={isbn}&country=BR");
+
+                _logger.LogInformation("[BookService][GetBookInGoogleAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}",
+                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var book = await JsonSerializer.DeserializeAsync<GoogleBookItems>(
+                    await response.Content.ReadAsStreamAsync(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }, cancellationToken);
+
+                    await _bookRepository.SetGoogleBookAsync(isbn, book, cancellationToken);
+
+                    return book;
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("[BookService][GetBookInGoogleAsync][Exception]: {ex}", ex.Message);
                 throw;
             }
         }

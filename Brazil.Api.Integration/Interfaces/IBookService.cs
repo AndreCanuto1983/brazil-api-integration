@@ -5,5 +5,6 @@ namespace Brazil.Api.Integration.Interfaces
     public interface IBookService
     {
         Task<BookResponse> GetBookAsync(string isbn, CancellationToken cancellationToken);
+        Task<GoogleBookItems> GetBookInGoogleAsync(string isbn, CancellationToken cancellationToken);
     }
 }

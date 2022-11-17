@@ -72,5 +72,43 @@ namespace Brazil.Api.Integration.Services
             }
         }
 
+        public async Task<CompanyResponse> GetCompanyInMyRecipeAsync(string cnpj, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var comapanyInRedis = await _companyRepository.GetCompanyAsync(cnpj, cancellationToken);
+
+                if (comapanyInRedis is not null)
+                    comapanyInRedis.Success();
+
+                var client = _httpClientFactory.CreateClient("MinhaReceita");
+
+                var response = await client.GetAsync($"/{cnpj}");
+
+                _logger.LogInformation("[CompanyService][GetCompanyAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}",
+                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
+
+                if (response.IsSuccessStatusCode)
+                {
+                    var company = await JsonSerializer.DeserializeAsync<Company>(
+                    await response.Content.ReadAsStreamAsync(),
+                    new JsonSerializerOptions
+                    {
+                        PropertyNameCaseInsensitive = true
+                    }, cancellationToken);
+
+                    await _companyRepository.SetCompanyAsync(company, cancellationToken);
+
+                    return company!.Success();
+                }
+
+                return null;
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("[CompanyService][GetCompanyAsync][Exception]: {ex}", ex.Message);
+                throw;
+            }
+        }
     }
 }

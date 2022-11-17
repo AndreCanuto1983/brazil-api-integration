@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
     public class CompanyController : ControllerBase
     {
         private readonly ICompanyService _companyService;
@@ -17,7 +17,7 @@ namespace Brazil.Api.Integration.Controllers
             _companyService = companyService;
         }
 
-        [HttpGet("{cnpj}")]
+        [HttpGet("v1/{cnpj}")]
         [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]
@@ -32,6 +32,28 @@ namespace Brazil.Api.Integration.Controllers
                 return BadRequest("Please enter a Cnpj with 14 digits");
 
             var response = await _companyService.GetCompanyAsync(cnpj, cancellationToken);
+
+            if (!response.Success)
+                return NoContent();
+
+            return Ok(response);
+        }
+
+        [HttpGet("v2/{cnpj}")]
+        [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> GetCompanyInMyRecipe(string cnpj, CancellationToken cancellationToken)
+        {
+            if (!Regex.IsMatch(cnpj, @"^[0-9]+$"))
+                return BadRequest("Please enter numbers only");
+
+            if (cnpj.Length < 14 || cnpj.Length > 14)
+                return BadRequest("Please enter a Cnpj with 14 digits");
+
+            var response = await _companyService.GetCompanyInMyRecipeAsync(cnpj, cancellationToken);
 
             if (!response.Success)
                 return NoContent();

@@ -7,7 +7,7 @@ using System.Text.RegularExpressions;
 namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
-    [Route("api/v1/[controller]")]
+    [Route("api/[controller]")]
     public class BooksController : ControllerBase
     {
         private readonly IBookService _bookService;
@@ -16,11 +16,11 @@ namespace Brazil.Api.Integration.Controllers
             _bookService = bookService;
         }
 
-        [HttpGet("{isbn}")]
+        [HttpGet("v1/{isbn}")]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]        
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]        
+        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetBook(string isbn, CancellationToken cancellationToken)
         {
@@ -30,6 +30,25 @@ namespace Brazil.Api.Integration.Controllers
             var response = await _bookService.GetBookAsync(isbn, cancellationToken);
 
             if (!response.Success)
+                return NoContent();
+
+            return Ok(response);
+        }
+
+        [HttpGet("v2/{isbn}")]
+        [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> GetBookInGoogle(string isbn, CancellationToken cancellationToken)
+        {
+            if (!Regex.IsMatch(isbn, @"^[0-9]+$"))
+                return BadRequest("Please enter numbers only");
+
+            var response = await _bookService.GetBookInGoogleAsync(isbn, cancellationToken);
+
+            if (response is null)
                 return NoContent();
 
             return Ok(response);

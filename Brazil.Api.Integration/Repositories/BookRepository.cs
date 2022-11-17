@@ -54,5 +54,41 @@ namespace Brazil.Api.Integration.Repositories
                 return null;
             }
         }
+
+        public async Task SetGoogleBookAsync(string isbn, GoogleBookItems? googleBookItems, CancellationToken cancellationToken)
+        {
+            try
+            {
+                if (googleBookItems is null)
+                    return;
+
+                await _distributedCache.SetStringAsync(
+                    isbn,
+                    JsonSerializer.Serialize(googleBookItems),
+                    cancellationToken);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("[BookRepository][SetGoogleBookAsync] => EXCEPTION: {ex}", ex.Message);
+            }
+        }
+
+        public async Task<GoogleBookItems?> GetGoogleBookAsync(string isbn, CancellationToken cancellationToken)
+        {
+            try
+            {
+                var response = await _distributedCache.GetAsync(isbn, cancellationToken);
+
+                if (response == null)
+                    return null;
+
+                return JsonSerializer.Deserialize<GoogleBookItems>(response);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError("[BookRepository][GetGoogleBookAsync] => EXCEPTION: {ex}", ex.Message);
+                return null;
+            }
+        }
     }
 }
