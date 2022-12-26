@@ -13,28 +13,38 @@ builder.Services.AddSwaggerGen();
 
 var allowSpecificOrigins = "MyPolicy";
 
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy(allowSpecificOrigins,
-        policy =>
-        {
-            policy.WithOrigins(
-                "http://localhost:8080",
-                "http://localhost:3000",
-                "http://192.168.0.195:8080",
-                "http://192.168.0.197:8080",
-                "https://pos-puc-front.web.app"
-                )
-            .AllowAnyHeader()
-            .AllowAnyMethod();
-        });
-});
+builder.Services.AddCors();
+
+//builder.Services.AddCors(options =>
+//{
+//    options.AddPolicy(allowSpecificOrigins,
+//        policy =>
+//        {
+//            policy.WithOrigins(
+//                "http://localhost:8080",
+//                "http://localhost:3000",
+//                "http://192.168.0.195:8080",
+//                "http://192.168.0.197:8080",
+//                "https://pos-puc-front.web.app"
+//                )
+//            .AllowAnyHeader()
+//            .AllowAnyMethod();
+//        });
+//});
 
 var app = builder.Build();
 
 app.MapHealthChecks("/healthcheck");
 app.CustomExceptionMiddleware();
-app.UseCors(allowSpecificOrigins);
+
+//app.UseCors(allowSpecificOrigins);
+app.UseCors(x => x
+            .AllowAnyOrigin()
+            .AllowAnyMethod()
+            .AllowAnyHeader()
+            .AllowCredentials()
+            );
+
 app.UseSwagger();
 app.UseSwaggerUI();
 app.UseHttpsRedirection();
