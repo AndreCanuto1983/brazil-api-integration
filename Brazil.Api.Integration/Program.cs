@@ -41,8 +41,7 @@ app.CustomExceptionMiddleware();
 app.UseCors(x => x
             .AllowAnyOrigin()
             .AllowAnyMethod()
-            .AllowAnyHeader()
-            .AllowCredentials()
+            .AllowAnyHeader()            
             );
 
 app.UseSwagger();
