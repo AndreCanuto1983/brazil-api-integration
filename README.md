@@ -17,8 +17,8 @@ Simple api to search for cnpj and search for books, integrating with external pu
 
 ## Push backend image to docker hub
 	docker login
-	docker tag pos.puc.tcc.api suaconta/pos.puc.tcc.api
-	docker push suaconta/pos.puc.tcc.api
+	docker tag pos.puc.tcc.api your_account/pos.puc.tcc.api
+	docker push your_account/pos.puc.tcc.api
 
 ## Deploy in kubernetes
 	kubectl create -f api-deploy.yaml
