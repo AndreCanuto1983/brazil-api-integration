@@ -7,7 +7,7 @@ Simple api to search for cnpj and search for books, integrating with external pu
 - Install Kubctl (https://kubernetes.io/docs/tasks/tools/)
 - Install minikube (https://minikube.sigs.k8s.io/docs/start/)
 
-# Right click on the project, open in terminal, type cd.. + enter, and type the commands below:
+## Right click on the project, open in terminal, type cd.. + enter, and type the commands below:
 
 ## Generate application image locally
     docker build -f Brazil.Api.Integration\Dockerfile -t pos.puc.tcc.api .
@@ -43,7 +43,7 @@ Simple api to search for cnpj and search for books, integrating with external pu
 	kubectl describe deploy pos-puc-tcc-front
 	kubectl describe svc pos-puc-tcc-front
 
-# DATA FOR TEST
+# Data For Test
 
 ## Books: 
 - 9788545702870  Akira vol. 1
