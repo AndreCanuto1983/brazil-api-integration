@@ -4,9 +4,9 @@ using Brazil.Api.Integration.Services;
 
 namespace Brazil.Api.Integration.Configurations
 {
-    public static class DependencyInjection
+    public static class DependencyInjectionSettings
     {
-        public static void Di(this IServiceCollection services)
+        public static void DependencyInjection(this IServiceCollection services)
         {
             services.AddTransient<IBookRepository, BookRepository>();            
             services.AddTransient<IBookService, BookService>();            

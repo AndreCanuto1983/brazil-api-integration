@@ -2,9 +2,9 @@
 
 namespace Brazil.Api.Integration.Configurations
 {
-    public static class HttpClientFactory
+    public static class HttpClientFactorySettings
     {        
-        public static void HttpClient(this WebApplicationBuilder builder)
+        public static void HttpClientFactory(this WebApplicationBuilder builder)
         {
             builder.Services.AddHttpClient("BrazilApi", client =>
             {
