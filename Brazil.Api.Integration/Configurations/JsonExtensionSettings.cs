@@ -2,9 +2,9 @@
 
 namespace Brazil.Api.Integration.Configurations
 {
-    public static class ProgramExtension
+    public static class JsonExtensionSettings
     {
-        public static void Extension(this IServiceCollection services)
+        public static void JsonSettings(this IServiceCollection services)
         {
             services.AddControllers()
                     .AddJsonOptions(options =>

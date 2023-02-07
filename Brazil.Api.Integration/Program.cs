@@ -4,7 +4,7 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Redis();
 builder.Services.DependencyInjection();
-builder.Services.Extension();
+builder.Services.JsonSettings();
 builder.HttpClientFactory();
 builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
