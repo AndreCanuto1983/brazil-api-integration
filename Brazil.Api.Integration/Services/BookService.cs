@@ -1,14 +1,15 @@
 ﻿using Brazil.Api.Integration.Converter;
+using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
 using Brazil.Api.Integration.Models;
 using Brazil.Api.Integration.Models.BookService;
+using Microsoft.OpenApi.Extensions;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
 {
     public class BookService : IBookService
-    {
-        private const string PATH_NAME = "/api/isbn/v1";
+    {        
         private readonly ILogger<BookService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly IBookRepository _bookRepository;
@@ -32,15 +33,12 @@ namespace Brazil.Api.Integration.Services
                 if (bookInRedis is not null)
                     return bookInRedis.Success();
 
-                var client = _httpClientFactory.CreateClient("BrazilApi");
+                var client = _httpClientFactory.CreateClient(Hosts.BrazilApi.GetDisplayName());
 
-                var response = await client.GetAsync($"{PATH_NAME}/{isbn}");
+                var response = await client.GetAsync($"/api/isbn/v1/{isbn}");
 
-                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}", 
-                    (int)response.StatusCode);
-
-                _logger.LogInformation("[BookService][GetBookAsync] => RESPONSE: {response}", 
-                    await response.Content.ReadAsStringAsync());
+                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}", 
+                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
 
                 if (response.IsSuccessStatusCode)
                 {

@@ -1,14 +1,15 @@
 ﻿using Brazil.Api.Integration.Converter;
+using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
 using Brazil.Api.Integration.Models;
 using Brazil.Api.Integration.Models.CompanyService;
+using Microsoft.OpenApi.Extensions;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
 {
     public class CompanyService : ICompanyService
-    {
-        private const string PATH_NAME = "/api/cnpj/v1";
+    {        
         private readonly ILogger<CompanyService> _logger;
         private readonly IHttpClientFactory _httpClientFactory;
         private readonly ICompanyRepository _companyRepository;
@@ -32,15 +33,12 @@ namespace Brazil.Api.Integration.Services
                 if (comapanyInRedis is not null)
                     comapanyInRedis.Success();
 
-                var client = _httpClientFactory.CreateClient("BrazilApi");
+                var client = _httpClientFactory.CreateClient(Hosts.BrazilApi.GetDisplayName());
 
-                var response = await client.GetAsync($"{PATH_NAME}/{cnpj}");
+                var response = await client.GetAsync($"/api/cnpj/v1/{cnpj}");
 
-                _logger.LogInformation("[CompanyService][GetCompanyAsync] => STATUS CODE: {statusCode}",
-                    (int)response.StatusCode);
-
-                _logger.LogInformation("[CompanyService][GetCompanyAsync] => RESPONSE: {response}",
-                    await response.Content.ReadAsStringAsync());
+                _logger.LogInformation("[CompanyService][GetCompanyAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}",
+                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
 
                 if (response.IsSuccessStatusCode)
                 {

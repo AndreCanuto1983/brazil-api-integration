@@ -1,4 +1,6 @@
-﻿using Microsoft.Net.Http.Headers;
+﻿using Brazil.Api.Integration.Enums;
+using Microsoft.Net.Http.Headers;
+using Microsoft.OpenApi.Extensions;
 
 namespace Brazil.Api.Integration.Configurations
 {
@@ -6,7 +8,7 @@ namespace Brazil.Api.Integration.Configurations
     {        
         public static void HttpClientFactory(this WebApplicationBuilder builder)
         {
-            builder.Services.AddHttpClient("BrazilApi", client =>
+            builder.Services.AddHttpClient(Hosts.BrazilApi.GetDisplayName(), client =>
             {
                 client.BaseAddress = new Uri(builder.Configuration.GetSection("Brazil-Api-Settings:Host").Value);
                 
