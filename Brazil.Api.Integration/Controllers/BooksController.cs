@@ -29,10 +29,10 @@ namespace Brazil.Api.Integration.Controllers
 
             var response = await _bookService.GetBookAsync(isbn, cancellationToken);
 
-            if (!response.Success)
-                return NoContent();
+            if (response.Success)
+                return Ok(response);
 
-            return Ok(response);
+            return NoContent();            
         }
     }
 }
