@@ -41,9 +41,11 @@ namespace Brazil.Api.Integration.Services
                     PropertyNameCaseInsensitive = true
                 }, cancellationToken);
 
-                await _bookRepository.SetBookAsync(book, cancellationToken);
+                if (httpResponse.StatusCode == HttpStatusCode.OK)
+                    await _bookRepository.SetBookAsync(book, cancellationToken);
 
-                return book!.BookResponse(httpResponse.StatusCode);
+                return book!.BookResponse(
+                    (int)httpResponse.StatusCode == 400 ? HttpStatusCode.NoContent : httpResponse.StatusCode);
             }
             catch (Exception ex)
             {

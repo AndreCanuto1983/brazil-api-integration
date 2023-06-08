@@ -41,9 +41,11 @@ namespace Brazil.Api.Integration.Services
                     PropertyNameCaseInsensitive = true
                 }, cancellationToken);
 
-                await _companyRepository.SetCompanyAsync(company!, cancellationToken);
+                if (httpResponse.StatusCode == HttpStatusCode.OK)
+                    await _companyRepository.SetCompanyAsync(company!, cancellationToken);
 
-                return company!.CompanyResponse(httpResponse.StatusCode);
+                return company!.CompanyResponse(
+                    (int)httpResponse.StatusCode == 400 ? HttpStatusCode.NoContent : httpResponse.StatusCode);
             }
             catch (Exception ex)
             {
