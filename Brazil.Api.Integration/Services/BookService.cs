@@ -1,7 +1,7 @@
 ﻿using Brazil.Api.Integration.Converter;
 using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
-using Brazil.Api.Integration.Models;
+using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.BookService;
 using System.Text.Json;
 

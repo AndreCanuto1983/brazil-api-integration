@@ -20,7 +20,7 @@ namespace Brazil.Api.Integration.Configurations
                     ReconnectRetryPolicy = new LinearRetry(1500),
                     ConnectRetry = redisConfigs.ConnectRetry,
                     ConnectTimeout = redisConfigs.ConnectTimeout,
-                    AsyncTimeout = 10000,
+                    AsyncTimeout = 2000,
                     Ssl = false,
                     DefaultDatabase = 0
                 };

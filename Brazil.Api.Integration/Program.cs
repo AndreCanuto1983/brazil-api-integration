@@ -10,6 +10,7 @@ builder.Services.AddHealthChecks();
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+builder.Services.SwaggerSettings();
 builder.Services.Cors();
 
 var app = builder.Build();

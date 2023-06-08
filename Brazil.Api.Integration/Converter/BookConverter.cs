@@ -1,4 +1,4 @@
-﻿using Brazil.Api.Integration.Models;
+﻿using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.BookService;
 
 namespace Brazil.Api.Integration.Converter

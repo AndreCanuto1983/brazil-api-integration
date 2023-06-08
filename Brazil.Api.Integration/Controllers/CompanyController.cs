@@ -1,14 +1,14 @@
-﻿using Brazil.Api.Integration.Interfaces;
-using Brazil.Api.Integration.Models;
+﻿using Brazil.Api.Integration.Common;
+using Brazil.Api.Integration.Interfaces;
+using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.CompanyService;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 
 namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CompanyController : ControllerBase
+    public class CompanyController :  BaseController
     {
         private readonly ICompanyService _companyService;
 
@@ -17,6 +17,17 @@ namespace Brazil.Api.Integration.Controllers
             _companyService = companyService;
         }
 
+        /// <summary>
+        /// Search for company data through cnpj
+        /// </summary>
+        /// <param name="cnpj"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <response code="200">Operation success</response>        
+        /// <response code="400">Note the sent parameters, something may be wrong</response>
+        /// <response code="401">Requires authentication</response>
+        /// <response code="500">Internal service error</response>
+        /// <response code="502">Service called internally returned some error</response>
         [HttpGet("{cnpj}")]
         [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
@@ -25,18 +36,13 @@ namespace Brazil.Api.Integration.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
         {
-            if (!Regex.IsMatch(cnpj, @"^[0-9]+$"))
-                return BadRequest("Please enter numbers only");
+            var cnpjIsValid = cnpj.CpfCnpjIsValid();
 
-            if (cnpj.Length < 14 || cnpj.Length > 14)
-                return BadRequest("Please enter a Cnpj with 14 digits");
+            if (!string.IsNullOrEmpty(cnpjIsValid))
+                return BadRequest(cnpjIsValid);
 
-            var response = await _companyService.GetCompanyAsync(cnpj, cancellationToken);
-
-            if (response.Success)
-                return Ok(response);
-
-            return NoContent();
+            return ProcessResponse(
+                await _companyService.GetCompanyAsync(cnpj, cancellationToken));
         }
     }
 }

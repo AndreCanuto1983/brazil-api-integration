@@ -1,4 +1,4 @@
-﻿namespace Brazil.Api.Integration.Models
+﻿namespace Brazil.Api.Integration.Models.Base
 {
     public class MessageError
     {

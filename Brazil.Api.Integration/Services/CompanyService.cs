@@ -1,14 +1,14 @@
 ﻿using Brazil.Api.Integration.Converter;
 using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
-using Brazil.Api.Integration.Models;
 using Brazil.Api.Integration.Models.CompanyService;
+using System.Net;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
 {
     public class CompanyService : ICompanyService
-    {        
+    {
         private readonly ILogger<CompanyService> _logger;
         private readonly IHttpUtil _httpUtil;
         private readonly ICompanyRepository _companyRepository;
@@ -30,37 +30,25 @@ namespace Brazil.Api.Integration.Services
                 var comapanyInRedis = await _companyRepository.GetCompanyAsync(cnpj, cancellationToken);
 
                 if (comapanyInRedis is not null)
-                    comapanyInRedis.Success();
+                    comapanyInRedis.CompanyResponse(HttpStatusCode.OK);
 
                 var httpResponse = await _httpUtil.GetAsync(HostBase.BrazilApi, $"/api/cnpj/v1/{cnpj}");
 
-                if (httpResponse.IsSuccessStatusCode)
+                var company = await JsonSerializer.DeserializeAsync<Company>(
+                await httpResponse.Content.ReadAsStreamAsync(),
+                new JsonSerializerOptions
                 {
-                    var company = await JsonSerializer.DeserializeAsync<Company>(
-                    await httpResponse.Content.ReadAsStreamAsync(),
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }, cancellationToken);
+                    PropertyNameCaseInsensitive = true
+                }, cancellationToken);
 
-                    await _companyRepository.SetCompanyAsync(company!, cancellationToken);
+                await _companyRepository.SetCompanyAsync(company!, cancellationToken);
 
-                    return company!.Success();
-                }
-
-                var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                    await httpResponse.Content.ReadAsStreamAsync(),
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }, cancellationToken);
-
-                return error!.CompanyUnsuccessfully();
+                return company!.CompanyResponse(httpResponse.StatusCode);
             }
             catch (Exception ex)
             {
                 _logger.LogError("[CompanyService][GetCompanyAsync][Exception]: {ex}", ex.Message);
-                throw;
+                return ex.Message.CompanyException();
             }
         }
     }

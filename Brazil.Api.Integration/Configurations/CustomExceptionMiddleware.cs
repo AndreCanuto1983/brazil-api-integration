@@ -1,4 +1,4 @@
-﻿using Brazil.Api.Integration.Models;
+﻿using Brazil.Api.Integration.Models.Base;
 using System.Net;
 using System.Text.Json;
 

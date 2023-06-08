@@ -1,5 +1,5 @@
 using Brazil.Api.Integration.Interfaces;
-using Brazil.Api.Integration.Models;
+using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.BookService;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.RegularExpressions;
@@ -16,6 +16,17 @@ namespace Brazil.Api.Integration.Controllers
             _bookService = bookService;
         }
 
+        /// <summary>
+        /// Search book data through isbn
+        /// </summary>
+        /// <param name="isbn"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <response code="200">Operation success</response>        
+        /// <response code="400">Note the sent parameters, something may be wrong</response>
+        /// <response code="401">Requires authentication</response>
+        /// <response code="500">Internal service error</response>
+        /// <response code="502">Service called internally returned some error</response>
         [HttpGet("{isbn}")]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
