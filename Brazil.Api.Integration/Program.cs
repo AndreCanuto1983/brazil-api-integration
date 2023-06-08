@@ -3,7 +3,7 @@ using Brazil.Api.Integration.Configurations;
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Redis();
-builder.Services.DependencyInjection();
+builder.Services.Ioc();
 builder.Services.JsonSettings();
 builder.HttpClientFactory();
 builder.Services.AddHealthChecks();

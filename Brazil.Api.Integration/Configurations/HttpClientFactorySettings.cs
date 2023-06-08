@@ -8,15 +8,12 @@ namespace Brazil.Api.Integration.Configurations
     {        
         public static void HttpClientFactory(this WebApplicationBuilder builder)
         {
-            builder.Services.AddHttpClient(Hosts.BrazilApi.GetDisplayName(), client =>
+            builder.Services.AddHttpClient(HostBase.BrazilApi.GetDisplayName(), client =>
             {
-                client.BaseAddress = new Uri(builder.Configuration.GetSection("Brazil-Api-Settings:Host").Value);
-                
+                client.BaseAddress = new Uri(builder.Configuration.GetSection("Brazil-Api-Settings:Host").Value);                
                 client.DefaultRequestHeaders.Add(HeaderNames.Accept, "*/*");
-
                 client.Timeout = TimeSpan.FromMilliseconds(
-                    double.Parse(builder.Configuration.GetSection("Brazil-Api-Settings:Timeout").Value)
-                    );               
+                    double.Parse(builder.Configuration.GetSection("Brazil-Api-Settings:Timeout").Value));               
             });
         }
     }

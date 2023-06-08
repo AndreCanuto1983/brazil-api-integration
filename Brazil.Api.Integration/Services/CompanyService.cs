@@ -3,7 +3,6 @@ using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
 using Brazil.Api.Integration.Models;
 using Brazil.Api.Integration.Models.CompanyService;
-using Microsoft.OpenApi.Extensions;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
@@ -11,16 +10,16 @@ namespace Brazil.Api.Integration.Services
     public class CompanyService : ICompanyService
     {        
         private readonly ILogger<CompanyService> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpUtil _httpUtil;
         private readonly ICompanyRepository _companyRepository;
 
         public CompanyService(
             ILogger<CompanyService> logger,
-            IHttpClientFactory httpClientFactory,
+            IHttpUtil httpUtil,
             ICompanyRepository companyRepository)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _httpUtil = httpUtil;
             _companyRepository = companyRepository;
         }
 
@@ -33,29 +32,24 @@ namespace Brazil.Api.Integration.Services
                 if (comapanyInRedis is not null)
                     comapanyInRedis.Success();
 
-                var client = _httpClientFactory.CreateClient(Hosts.BrazilApi.GetDisplayName());
+                var httpResponse = await _httpUtil.GetAsync(HostBase.BrazilApi, $"/api/cnpj/v1/{cnpj}");
 
-                var response = await client.GetAsync($"/api/cnpj/v1/{cnpj}");
-
-                _logger.LogInformation("[CompanyService][GetCompanyAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}",
-                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
-
-                if (response.IsSuccessStatusCode)
+                if (httpResponse.IsSuccessStatusCode)
                 {
                     var company = await JsonSerializer.DeserializeAsync<Company>(
-                    await response.Content.ReadAsStreamAsync(),
+                    await httpResponse.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
                     }, cancellationToken);
 
-                    await _companyRepository.SetCompanyAsync(company, cancellationToken);
+                    await _companyRepository.SetCompanyAsync(company!, cancellationToken);
 
                     return company!.Success();
                 }
 
                 var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                    await response.Content.ReadAsStreamAsync(),
+                    await httpResponse.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
@@ -69,6 +63,5 @@ namespace Brazil.Api.Integration.Services
                 throw;
             }
         }
-
     }
 }

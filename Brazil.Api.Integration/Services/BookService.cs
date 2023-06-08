@@ -3,7 +3,6 @@ using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
 using Brazil.Api.Integration.Models;
 using Brazil.Api.Integration.Models.BookService;
-using Microsoft.OpenApi.Extensions;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
@@ -11,16 +10,16 @@ namespace Brazil.Api.Integration.Services
     public class BookService : IBookService
     {        
         private readonly ILogger<BookService> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
+        private readonly IHttpUtil _httpUtil;
         private readonly IBookRepository _bookRepository;
 
         public BookService(
             ILogger<BookService> logger,
-            IHttpClientFactory httpClientFactory,
+            IHttpUtil httpUtil,
             IBookRepository bookRepository)
         {
             _logger = logger;
-            _httpClientFactory = httpClientFactory;
+            _httpUtil = httpUtil;
             _bookRepository = bookRepository;
         }
 
@@ -33,17 +32,12 @@ namespace Brazil.Api.Integration.Services
                 if (bookInRedis is not null)
                     return bookInRedis.Success();
 
-                var client = _httpClientFactory.CreateClient(Hosts.BrazilApi.GetDisplayName());
+                var httpResponse = await _httpUtil.GetAsync(HostBase.BrazilApi, $"/api/isbn/v1/{isbn}");
 
-                var response = await client.GetAsync($"/api/isbn/v1/{isbn}");
-
-                _logger.LogInformation("[BookService][GetBookAsync] => STATUS CODE: {statusCode}, RESPONSE: {response}", 
-                    (int)response.StatusCode, await response.Content.ReadAsStringAsync());
-
-                if (response.IsSuccessStatusCode)
+                if (httpResponse.IsSuccessStatusCode)
                 {
                     var book = await JsonSerializer.DeserializeAsync<Book>(
-                    await response.Content.ReadAsStreamAsync(),
+                    await httpResponse.Content.ReadAsStreamAsync(),
                     new JsonSerializerOptions
                     {
                         PropertyNameCaseInsensitive = true
@@ -55,7 +49,7 @@ namespace Brazil.Api.Integration.Services
                 }
 
                 var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                        await response.Content.ReadAsStreamAsync(),
+                        await httpResponse.Content.ReadAsStreamAsync(),
                         new JsonSerializerOptions
                         {
                             PropertyNameCaseInsensitive = true

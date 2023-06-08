@@ -1,6 +1,6 @@
 ﻿namespace Brazil.Api.Integration.Enums
 {
-    public enum Hosts
+    public enum HostBase
     {
         BrazilApi
     }
