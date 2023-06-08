@@ -1,14 +1,14 @@
+using Brazil.Api.Integration.Common;
 using Brazil.Api.Integration.Interfaces;
 using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.BookService;
 using Microsoft.AspNetCore.Mvc;
-using System.Text.RegularExpressions;
 
 namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class BooksController : ControllerBase
+    public class BooksController : BaseController
     {
         private readonly IBookService _bookService;
         public BooksController(IBookService bookService)
@@ -29,21 +29,20 @@ namespace Brazil.Api.Integration.Controllers
         /// <response code="502">Service called internally returned some error</response>
         [HttpGet("{isbn}")]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
-        [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]        
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]        
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]        
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status401Unauthorized)]        
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]        
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetBook(string isbn, CancellationToken cancellationToken)
         {
-            if (!Regex.IsMatch(isbn, @"^[0-9]+$"))
-                return BadRequest("Please enter numbers only");
+            var onlyNumbersValidate = isbn.OnlyNumbersIsValid();
 
-            var response = await _bookService.GetBookAsync(isbn, cancellationToken);
+            if (!string.IsNullOrEmpty(onlyNumbersValidate))
+                return BadRequest(onlyNumbersValidate);
 
-            if (response.Success)
-                return Ok(response);
-
-            return NoContent();            
+            return ProcessResponse(
+                await _bookService.GetBookAsync(isbn, cancellationToken));        
         }
     }
 }

@@ -30,9 +30,10 @@ namespace Brazil.Api.Integration.Configurations
                         
             context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
-            var result = new MessageError
+            var result = new MessageResponse
             {
-                Message = exception.Message
+                Code = (int)HttpStatusCode.InternalServerError,
+                Description = exception.Message
             };
 
             return context.Response.WriteAsync(JsonSerializer.Serialize(result));

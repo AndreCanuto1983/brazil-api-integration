@@ -1,14 +1,14 @@
 ﻿using Brazil.Api.Integration.Converter;
 using Brazil.Api.Integration.Enums;
 using Brazil.Api.Integration.Interfaces;
-using Brazil.Api.Integration.Models.Base;
 using Brazil.Api.Integration.Models.BookService;
+using System.Net;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Services
 {
     public class BookService : IBookService
-    {        
+    {
         private readonly ILogger<BookService> _logger;
         private readonly IHttpUtil _httpUtil;
         private readonly IBookRepository _bookRepository;
@@ -30,37 +30,25 @@ namespace Brazil.Api.Integration.Services
                 var bookInRedis = await _bookRepository.GetBookAsync(isbn, cancellationToken);
 
                 if (bookInRedis is not null)
-                    return bookInRedis.Success();
+                    return bookInRedis.BookResponse(HttpStatusCode.OK);
 
                 var httpResponse = await _httpUtil.GetAsync(HostBase.BrazilApi, $"/api/isbn/v1/{isbn}");
 
-                if (httpResponse.IsSuccessStatusCode)
+                var book = await JsonSerializer.DeserializeAsync<Book>(
+                await httpResponse.Content.ReadAsStreamAsync(),
+                new JsonSerializerOptions
                 {
-                    var book = await JsonSerializer.DeserializeAsync<Book>(
-                    await httpResponse.Content.ReadAsStreamAsync(),
-                    new JsonSerializerOptions
-                    {
-                        PropertyNameCaseInsensitive = true
-                    }, cancellationToken);
+                    PropertyNameCaseInsensitive = true
+                }, cancellationToken);
 
-                    await _bookRepository.SetBookAsync(book, cancellationToken);
+                await _bookRepository.SetBookAsync(book, cancellationToken);
 
-                    return book!.Success();
-                }
-
-                var error = await JsonSerializer.DeserializeAsync<MessageError>(
-                        await httpResponse.Content.ReadAsStreamAsync(),
-                        new JsonSerializerOptions
-                        {
-                            PropertyNameCaseInsensitive = true
-                        }, cancellationToken);
-
-                return error!.BookUnsuccessfully();
+                return book!.BookResponse(httpResponse.StatusCode);
             }
             catch (Exception ex)
             {
                 _logger.LogError("[BookService][GetBookAsync][Exception]: {ex}", ex.Message);
-                throw;
+                return ex.Message.BookException();
             }
         }
     }

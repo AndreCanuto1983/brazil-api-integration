@@ -31,7 +31,7 @@ namespace Brazil.Api.Integration.Controllers
         [HttpGet("{cnpj}")]
         [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        [ProducesResponseType(typeof(MessageError), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
