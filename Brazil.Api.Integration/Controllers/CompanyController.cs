@@ -18,7 +18,35 @@ namespace Brazil.Api.Integration.Controllers
         }
 
         /// <summary>
-        /// Search for company data through cnpj
+        /// Search for company data through cnpj in My Recipe Api
+        /// </summary>
+        /// <param name="cnpj"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        /// <response code="200">Operation success</response>        
+        /// <response code="400">Note the sent parameters, something may be wrong</response>
+        /// <response code="401">Requires authentication</response>
+        /// <response code="500">Internal service error</response>
+        /// <response code="502">Service called internally returned some error</response>
+        [HttpGet("MyRecipe/{cnpj}")]
+        [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
+        public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
+        {
+            var cnpjIsValid = cnpj.CpfCnpjIsValid();
+
+            if (!string.IsNullOrEmpty(cnpjIsValid))
+                return BadRequest(cnpjIsValid);
+
+            return ProcessResponse(
+                await _companyService.GetCompanyMinhaReceitaApiAsync(cnpj, cancellationToken));
+        }
+
+        /// <summary>
+        /// Search for company data through cnpj in Brasil Api
         /// </summary>
         /// <param name="cnpj"></param>
         /// <param name="cancellationToken"></param>
@@ -34,7 +62,7 @@ namespace Brazil.Api.Integration.Controllers
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
-        public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
+        public async Task<IActionResult> GetCompanyInBrasilApi(string cnpj, CancellationToken cancellationToken)
         {
             var cnpjIsValid = cnpj.CpfCnpjIsValid();
 
@@ -42,7 +70,7 @@ namespace Brazil.Api.Integration.Controllers
                 return BadRequest(cnpjIsValid);
 
             return ProcessResponse(
-                await _companyService.GetCompanyAsync(cnpj, cancellationToken));
+                await _companyService.GetCompanyBrasilApiAsync(cnpj, cancellationToken));
         }
     }
 }

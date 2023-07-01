@@ -2,6 +2,7 @@
 {
     public enum HostBase
     {
-        BrazilApi
+        BrazilApi,
+        MinhaReceita
     }
 }

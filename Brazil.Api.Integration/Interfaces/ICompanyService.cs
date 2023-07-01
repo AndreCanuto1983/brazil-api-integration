@@ -4,6 +4,7 @@ namespace Brazil.Api.Integration.Interfaces
 {
     public interface ICompanyService
     {
-        Task<CompanyResponse> GetCompanyAsync(string cnpj, CancellationToken cancellationToken);
+        Task<CompanyResponse> GetCompanyMinhaReceitaApiAsync(string cnpj, CancellationToken cancellationToken);
+        Task<CompanyResponse> GetCompanyBrasilApiAsync(string cnpj, CancellationToken cancellationToken);
     }
 }
