@@ -26,27 +26,19 @@ namespace Brazil.Api.Integration.Common
             bool showRequest = true,
             bool showResponse = true)
         {
-            try
-            {
-                var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
+            var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
 
-                if (showRequest)
-                    _logger.LogInformation("[HttpUtil][GetAsync] => HOST: {host}", client.BaseAddress + uri);
+            if (showRequest)
+                _logger.LogInformation("[HttpUtil][GetAsync] => HOST: {host}", client.BaseAddress + uri);
 
-                var httpResponse = await client.GetAsync(uri);
+            var httpResponse = await client.GetAsync(uri);
 
-                if (showResponse)
-                    _logger.LogInformation("[HttpUtil][GetAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
-                    (int)httpResponse.StatusCode,
-                        await httpResponse.Content.ReadAsStringAsync());
+            if (showResponse)
+                _logger.LogInformation("[HttpUtil][GetAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
+                (int)httpResponse.StatusCode,
+                    await httpResponse.Content.ReadAsStringAsync());
 
-                return httpResponse;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("[HttpUtil][GetAsync] => EXCEPTION: {ex.Message}", ex.Message);
-                throw;
-            }
+            return httpResponse;
         }
 
         public async Task<HttpResponseMessage> ExecuteAsync<Request>(
@@ -58,36 +50,28 @@ namespace Brazil.Api.Integration.Common
             bool showRequest = true,
             bool showResponse = true)
         {
-            try
-            {
-                var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
+            var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
 
-                var httpRequest = MountHttpRequest(
-                    request,
-                    client.BaseAddress?.OriginalString ?? String.Empty,
-                    uri,
-                    httpMethod,
-                    headers);
+            var httpRequest = MountHttpRequest(
+                request,
+                client.BaseAddress?.OriginalString ?? String.Empty,
+                uri,
+                httpMethod,
+                headers);
 
-                _logger.LogInformation("[HttpUtil][ExecuteAsync] => HOST: {host}", client.BaseAddress + uri);
+            _logger.LogInformation("[HttpUtil][ExecuteAsync] => HOST: {host}", client.BaseAddress + uri);
 
-                if (showRequest)
-                    _logger.LogInformation("[HttpUtil][ExecuteAsync] => REQUEST: {request}", JsonSerializer.Serialize(request));
+            if (showRequest)
+                _logger.LogInformation("[HttpUtil][ExecuteAsync] => REQUEST: {request}", JsonSerializer.Serialize(request));
 
-                var httpResponse = await client.SendAsync(httpRequest);
+            var httpResponse = await client.SendAsync(httpRequest);
 
-                if (showResponse)
-                    _logger.LogInformation("[HttpUtil][ExecuteAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
-                    (int)httpResponse.StatusCode,
-                        await httpResponse.Content.ReadAsStringAsync());
+            if (showResponse)
+                _logger.LogInformation("[HttpUtil][ExecuteAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
+                (int)httpResponse.StatusCode,
+                    await httpResponse.Content.ReadAsStringAsync());
 
-                return httpResponse;
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("[HttpUtil][ExecuteAsync] => EXCEPTION: {ex.Message}", ex.Message);
-                throw;
-            }
+            return httpResponse;
         }
 
         private static HttpRequestMessage MountHttpRequest<Request>(
