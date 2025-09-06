@@ -8,14 +8,9 @@ namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class CompanyController :  BaseController
+    public class CompanyController(ICompanyService companyService) : BaseController
     {
-        private readonly ICompanyService _companyService;
-
-        public CompanyController(ICompanyService companyService)
-        {
-            _companyService = companyService;
-        }
+        private readonly ICompanyService _companyService = companyService;
 
         /// <summary>
         /// Search for company data through cnpj in My Recipe Api
@@ -24,15 +19,19 @@ namespace Brazil.Api.Integration.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <response code="200">Operation success</response>        
+        /// <response code="204">No content</response>        
         /// <response code="400">Note the sent parameters, something may be wrong</response>
         /// <response code="401">Requires authentication</response>
         /// <response code="500">Internal service error</response>
         /// <response code="502">Service called internally returned some error</response>
+        /// <response code="503">Service unavailable</response>
         [HttpGet("MyRecipe/{cnpj}")]
         [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
         {
@@ -52,15 +51,19 @@ namespace Brazil.Api.Integration.Controllers
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
         /// <response code="200">Operation success</response>        
+        /// <response code="204">No content</response>    
         /// <response code="400">Note the sent parameters, something may be wrong</response>
         /// <response code="401">Requires authentication</response>
         /// <response code="500">Internal service error</response>
         /// <response code="502">Service called internally returned some error</response>
+        /// <response code="503">Service unavailable</response>
         [HttpGet("{cnpj}")]
         [ProducesResponseType(typeof(Company), StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompanyInBrasilApi(string cnpj, CancellationToken cancellationToken)
         {

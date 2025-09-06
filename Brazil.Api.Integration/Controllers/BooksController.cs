@@ -8,13 +8,9 @@ namespace Brazil.Api.Integration.Controllers
 {
     [ApiController]
     [Route("api/v1/[controller]")]
-    public class BooksController : BaseController
+    public class BooksController(IBookService bookService) : BaseController
     {
-        private readonly IBookService _bookService;
-        public BooksController(IBookService bookService)
-        {
-            _bookService = bookService;
-        }
+        private readonly IBookService _bookService = bookService;
 
         /// <summary>
         /// Search book data through isbn
@@ -27,11 +23,12 @@ namespace Brazil.Api.Integration.Controllers
         /// <response code="401">Requires authentication</response>
         /// <response code="500">Internal service error</response>
         /// <response code="502">Service called internally returned some error</response>
+        /// <response code="503">Service unavailable</response>
         [HttpGet("{isbn}")]
         [ProducesResponseType(typeof(Book), StatusCodes.Status200OK)]
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]        
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status401Unauthorized)]        
-        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]        
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status401Unauthorized)]
+        [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status500InternalServerError)]
         [ProducesResponseType(typeof(MessageResponse), StatusCodes.Status502BadGateway)]
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetBook(string isbn, CancellationToken cancellationToken)
@@ -42,7 +39,7 @@ namespace Brazil.Api.Integration.Controllers
                 return BadRequest(onlyNumbersValidate);
 
             return ProcessResponse(
-                await _bookService.GetBookAsync(isbn, cancellationToken));        
+                await _bookService.GetBookAsync(isbn, cancellationToken));
         }
     }
 }

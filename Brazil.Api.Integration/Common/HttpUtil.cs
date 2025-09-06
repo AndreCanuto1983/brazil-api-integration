@@ -7,69 +7,43 @@ using System.Text.Json;
 
 namespace Brazil.Api.Integration.Common
 {
-    public class HttpUtil : IHttpUtil
+    public class HttpUtil(
+        ILogger<HttpUtil> logger,
+        IHttpClientFactory httpClientFactory) : IHttpUtil
     {
-        private readonly ILogger<HttpUtil> _logger;
-        private readonly IHttpClientFactory _httpClientFactory;
-
-        public HttpUtil(
-            ILogger<HttpUtil> logger,
-            IHttpClientFactory httpClientFactory)
-        {
-            _logger = logger;
-            _httpClientFactory = httpClientFactory;
-        }
-
-        public async Task<HttpResponseMessage> GetAsync(
-            HostBase hostBase,
-            string uri,
-            bool showRequest = true,
-            bool showResponse = true)
-        {
-            var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
-
-            if (showRequest)
-                _logger.LogInformation("[HttpUtil][GetAsync] => HOST: {host}", client.BaseAddress + uri);
-
-            var httpResponse = await client.GetAsync(uri);
-
-            if (showResponse)
-                _logger.LogInformation("[HttpUtil][GetAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
-                (int)httpResponse.StatusCode,
-                    await httpResponse.Content.ReadAsStringAsync());
-
-            return httpResponse;
-        }
+        private readonly ILogger<HttpUtil> _logger = logger;
+        private readonly IHttpClientFactory _httpClientFactory = httpClientFactory;
 
         public async Task<HttpResponseMessage> ExecuteAsync<Request>(
             Request request,
             HostBase hostBase,
             string uri,
             HttpMethod httpMethod,
-            Dictionary<string, string>? headers = null,
-            bool showRequest = true,
-            bool showResponse = true)
+            Dictionary<string, string> headers = null)
         {
             var client = _httpClientFactory.CreateClient(hostBase.GetDisplayName());
 
             var httpRequest = MountHttpRequest(
                 request,
-                client.BaseAddress?.OriginalString ?? String.Empty,
+                client.BaseAddress?.OriginalString ?? string.Empty,
                 uri,
                 httpMethod,
                 headers);
 
-            _logger.LogInformation("[HttpUtil][ExecuteAsync] => HOST: {host}", client.BaseAddress + uri);
-
-            if (showRequest)
-                _logger.LogInformation("[HttpUtil][ExecuteAsync] => REQUEST: {request}", JsonSerializer.Serialize(request));
-
             var httpResponse = await client.SendAsync(httpRequest);
 
-            if (showResponse)
-                _logger.LogInformation("[HttpUtil][ExecuteAsync] => STATUS CODE: {statusCode} | RESPONSE: {stringContent}",
-                (int)httpResponse.StatusCode,
+            if (!httpResponse.IsSuccessStatusCode)
+            {
+                _logger.LogError("------Error Detail--------");
+
+                _logger.LogInformation("[Route request]: {Host}", client.BaseAddress + uri);
+                _logger.LogInformation("[Data request]: {Request}", JsonSerializer.Serialize(request));
+                _logger.LogInformation("[Status Code]: {statusCode} | [Response]: {stringContent}",
+                    (int)httpResponse.StatusCode,
                     await httpResponse.Content.ReadAsStringAsync());
+
+                _logger.LogError("--------------------------");
+            }
 
             return httpResponse;
         }
@@ -81,40 +55,36 @@ namespace Brazil.Api.Integration.Common
             HttpMethod httpMethod,
             Dictionary<string, string>? headers = null)
         {
-            var host = MountUrl(baseUrl, uri);
+            baseUrl = (baseUrl.EndsWith('/')) ? baseUrl.TrimEnd('/') : baseUrl;
+
+            var host = string.Concat(baseUrl.Trim(), uri.Trim());
 
             var httpRequest = ToRequestMessage(
                 new Uri(host),
                 httpMethod,
-                httpMethod.Method == HttpMethod.Get.ToString() ? string.Empty : JsonSerializer.Serialize(request),
+                httpMethod.Method.Equals(nameof(HttpMethod.Get), StringComparison.CurrentCultureIgnoreCase) ? string.Empty : JsonSerializer.Serialize(request),
                 headers);
 
             return httpRequest;
         }
 
-        private static string MountUrl(string baseUrl, string uri)
-        {
-            baseUrl = (baseUrl.EndsWith("/")) ? baseUrl.TrimEnd('/') : baseUrl;
-            return string.Concat(baseUrl.Trim(), uri.Trim());
-        }
-
         private static HttpRequestMessage ToRequestMessage(
-                    Uri endpoint,
-                    HttpMethod method,
-                    string requestContent,
-                    Dictionary<string, string>? headers = null)
+            Uri endpoint,
+            HttpMethod httpMethod,
+            string requestContent,
+            Dictionary<string, string>? headers = null)
         {
+            const string defaultContentType = "application/json";
+
             Uri? uriGet = null;
 
-            if (HttpMethod.Get == method)
+            if (httpMethod.Method.Equals(nameof(HttpMethod.Get), StringComparison.CurrentCultureIgnoreCase))
                 uriGet = new Uri(endpoint.AbsoluteUri);
-
-            const string defaultContentType = "application/json";
 
             var httpRequest = new HttpRequestMessage
             {
-                RequestUri = method != HttpMethod.Get ? endpoint : uriGet,
-                Method = method,
+                RequestUri = httpMethod != HttpMethod.Get ? endpoint : uriGet,
+                Method = httpMethod,
                 Content = new StringContent(requestContent, Encoding.UTF8, defaultContentType)
             };
 

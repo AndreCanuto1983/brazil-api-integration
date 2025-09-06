@@ -18,12 +18,7 @@ var app = builder.Build();
 app.MapHealthChecks("/healthcheck");
 app.CustomExceptionMiddleware();
 
-//app.UseCors(allowSpecificOrigins);
-app.UseCors(x => x
-            .AllowAnyOrigin()
-            .AllowAnyMethod()
-            .AllowAnyHeader()            
-            );
+app.UseCors("allowSpecificOrigins");
 
 app.UseSwagger();
 app.UseSwaggerUI();

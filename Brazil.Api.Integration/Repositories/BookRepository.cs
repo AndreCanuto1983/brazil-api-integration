@@ -5,21 +5,14 @@ using System.Text.Json;
 
 namespace Brazil.Api.Integration.Repositories
 {
-    public class BookRepository : IBookRepository
+    public class BookRepository(
+        IDistributedCache distributedCache,
+        ILogger<BookRepository> logger) : IBookRepository
     {
-        private readonly IDistributedCache _distributedCache;
-        private readonly ILogger<BookRepository> _logger;
+        private readonly IDistributedCache _distributedCache = distributedCache;
+        private readonly ILogger<BookRepository> _logger = logger;
 
-        public BookRepository(
-            IDistributedCache distributedCache,
-            ILogger<BookRepository> logger
-            )
-        {
-            _distributedCache = distributedCache;
-            _logger = logger;
-        }
-
-        public async Task SetBookAsync(Book? book, CancellationToken cancellationToken)
+        public async Task SetBookAsync(Book book, CancellationToken cancellationToken)
         {
             try
             {
@@ -33,25 +26,25 @@ namespace Brazil.Api.Integration.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError("[BookRepository][SetBookAsync] => EXCEPTION: {ex}", ex.Message);
+                _logger.LogError("[SetBookAsync] -> ERROR: {Ex}", ex.Message);
             }
         }
 
-        public async Task<Book?> GetBookAsync(string key, CancellationToken cancellationToken)
+        public async Task<Book> GetBookAsync(string key, CancellationToken cancellationToken)
         {
             try
             {
                 var response = await _distributedCache.GetAsync(key, cancellationToken);
 
                 if (response == null)
-                    return null;
+                    return new Book();
 
                 return JsonSerializer.Deserialize<Book>(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError("[BookRepository][GetBookAsync] => EXCEPTION: {ex}", ex.Message);
-                return null;
+                _logger.LogError("[GetBookAsync] -> ERROR: {Ex}", ex.Message);
+                return new Book();
             }
         }
     }

@@ -1,16 +1,11 @@
 ﻿using Brazil.Api.Integration.Models.Base;
-using System.Net;
 using System.Text.Json;
 
 namespace Brazil.Api.Integration.Configurations
 {
-    public class CustomExceptionMiddleware
+    public class CustomExceptionMiddleware(RequestDelegate requestDelegate)
     {
-        private readonly RequestDelegate _requestDelegate;
-        public CustomExceptionMiddleware(RequestDelegate requestDelegate)
-        {
-            _requestDelegate = requestDelegate;
-        }
+        private readonly RequestDelegate _requestDelegate = requestDelegate;
 
         public async Task InvokeAsync(HttpContext httpContext)
         {
@@ -27,12 +22,10 @@ namespace Brazil.Api.Integration.Configurations
         private static Task HandleExceptionAsync(HttpContext context, Exception exception)
         {
             context.Response.ContentType = "application/json";
-                        
-            context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
 
             var result = new MessageResponse
             {
-                Code = (int)HttpStatusCode.InternalServerError,
+                Code = context.Response.StatusCode,
                 Description = exception.Message
             };
 

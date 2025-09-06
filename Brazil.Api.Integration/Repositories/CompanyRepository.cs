@@ -5,25 +5,18 @@ using System.Text.Json;
 
 namespace Brazil.Api.Integration.Repositories
 {
-    public class CompanyRepository : ICompanyRepository
+    public class CompanyRepository(
+        IDistributedCache distributedCache,
+        ILogger<CompanyRepository> logger) : ICompanyRepository
     {
-        private readonly IDistributedCache _distributedCache;
-        private readonly ILogger<CompanyRepository> _logger;
+        private readonly IDistributedCache _distributedCache = distributedCache;
+        private readonly ILogger<CompanyRepository> _logger = logger;
 
-        public CompanyRepository(
-            IDistributedCache distributedCache,
-            ILogger<CompanyRepository> logger
-            )
-        {
-            _distributedCache = distributedCache;
-            _logger = logger;
-        }
-
-        public async Task SetCompanyAsync(Company? company, CancellationToken cancellationToken)
+        public async Task SetCompanyAsync(Company company, CancellationToken cancellationToken)
         {
             try
             {
-                if (company is null)
+                if (company.Cnpj is null)
                     return;
 
                 var response = await _distributedCache.GetAsync(company.Cnpj, cancellationToken);
@@ -38,25 +31,25 @@ namespace Brazil.Api.Integration.Repositories
             }
             catch (Exception ex)
             {
-                _logger.LogError("[CompanyRepository][SetCompanyAsync] => EXCEPTION: {ex}", ex.Message);                
+                _logger.LogError("[SetCompanyAsync] -> EXCEPTION: {ex}", ex.Message);
             }
         }
 
-        public async Task<Company?> GetCompanyAsync(string cnpj, CancellationToken cancellationToken)
+        public async Task<Company> GetCompanyAsync(string cnpj, CancellationToken cancellationToken)
         {
             try
             {
                 var response = await _distributedCache.GetAsync(cnpj, cancellationToken);
 
                 if (response == null)
-                    return null;
+                    return new Company();
 
                 return JsonSerializer.Deserialize<Company>(response);
             }
             catch (Exception ex)
             {
-                _logger.LogError("[CompanyRepository][GetCompanyAsync] => EXCEPTION: {ex}", ex.Message);
-                return null;
+                _logger.LogError("[GetCompanyAsync] -> EXCEPTION: {ex}", ex.Message);
+                return new Company();
             }
         }
     }

@@ -1,7 +1,7 @@
 ﻿using Brazil.Api.Integration.Interfaces;
 using Microsoft.AspNetCore.Mvc;
 
-namespace Brazil.Api.Integration.Controllers
+namespace Brazil.Api.Integration.Common
 {
     [ApiController]
     [Produces("application/json")]
@@ -22,12 +22,12 @@ namespace Brazil.Api.Integration.Controllers
                     return NoContent();
 
                 case StatusCodes.Status400BadRequest:
-                    return BadRequest(response?.Message);                    
+                    return BadRequest(response?.Message);
 
                 case StatusCodes.Status404NotFound:
-                    return NotFound(response?.Message);                    
+                    return NotFound(response?.Message);
 
-                case StatusCodes.Status500InternalServerError:                    
+                case StatusCodes.Status500InternalServerError:
                     return StatusCode(StatusCodes.Status500InternalServerError, response?.Message);
 
                 case StatusCodes.Status503ServiceUnavailable:
