@@ -35,9 +35,9 @@ namespace Brazil.Api.Integration.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompany(string cnpj, CancellationToken cancellationToken)
         {
-            var cnpjIsValid = cnpj.CpfCnpjIsValid();
+            var cnpjIsValid = cnpj.IsValid();
 
-            if (!string.IsNullOrEmpty(cnpjIsValid))
+            if (!cnpjIsValid)
                 return BadRequest(cnpjIsValid);
 
             return ProcessResponse(
@@ -67,9 +67,9 @@ namespace Brazil.Api.Integration.Controllers
         [ProducesResponseType(StatusCodes.Status503ServiceUnavailable)]
         public async Task<IActionResult> GetCompanyInBrasilApi(string cnpj, CancellationToken cancellationToken)
         {
-            var cnpjIsValid = cnpj.CpfCnpjIsValid();
+            var cnpjIsValid = cnpj.IsValid();
 
-            if (!string.IsNullOrEmpty(cnpjIsValid))
+            if (!cnpjIsValid)
                 return BadRequest(cnpjIsValid);
 
             return ProcessResponse(
